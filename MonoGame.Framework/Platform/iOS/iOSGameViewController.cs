@@ -37,6 +37,33 @@ namespace Microsoft.Xna.Framework
 
         public DisplayOrientation SupportedOrientations { get; set; }
 
+        // UIViewController.InterfaceOrientation's value does not change when the screen is rotated on the iPad 13.4.1.
+        // This property was deprecated in iOS8.
+        // I replaced it with UIDevice.CurrentDevice.Orientation.
+        public UIInterfaceOrientation CurrentDeviceOrientation
+        {
+            get
+            {
+                var orientation = UIDevice.CurrentDevice.Orientation;
+                switch (orientation)
+                {
+                    case UIDeviceOrientation.LandscapeLeft: return UIInterfaceOrientation.LandscapeLeft;
+                    case UIDeviceOrientation.LandscapeRight: return UIInterfaceOrientation.LandscapeRight;
+                    case UIDeviceOrientation.Portrait: return UIInterfaceOrientation.Portrait;
+                    case UIDeviceOrientation.PortraitUpsideDown: return UIInterfaceOrientation.PortraitUpsideDown;
+                    case UIDeviceOrientation.FaceUp:
+                    case UIDeviceOrientation.FaceDown:
+                        if (UIScreen.MainScreen.Bounds.Width < UIScreen.MainScreen.Bounds.Height)
+                        {
+                            return UIInterfaceOrientation.Portrait;
+                        }
+                        return UIInterfaceOrientation.LandscapeLeft;
+                    default:
+                        return UIInterfaceOrientation.Unknown;
+                }
+            }
+        }
+
         public override void LoadView()
         {
 			CGRect frame;
@@ -51,7 +78,7 @@ namespace Microsoft.Xna.Framework
                 #if !TVOS
                 // iOS 7 and older reverses width/height in landscape mode when reporting resolution,
                 // iOS 8+ reports resolution correctly in all cases
-                if (InterfaceOrientation == UIInterfaceOrientation.LandscapeLeft || InterfaceOrientation == UIInterfaceOrientation.LandscapeRight)
+                if (CurrentDeviceOrientation == UIInterfaceOrientation.LandscapeLeft || CurrentDeviceOrientation == UIInterfaceOrientation.LandscapeRight)
                 {
 					frame = new CGRect(0, 0, (nfloat)Math.Max(screen.Bounds.Width, screen.Bounds.Height), (nfloat)Math.Min(screen.Bounds.Width, screen.Bounds.Height));
                 }
@@ -124,7 +151,7 @@ namespace Microsoft.Xna.Framework
 
             if (oldSize != toSize)
             {
-                UIInterfaceOrientation prevOrientation = InterfaceOrientation;
+                UIInterfaceOrientation prevOrientation = CurrentDeviceOrientation;
 
                 // In iOS 8+ DidRotate is no longer called after a rotation
                 // But we need to notify iOSGamePlatform to update back buffer so we explicitly call it 

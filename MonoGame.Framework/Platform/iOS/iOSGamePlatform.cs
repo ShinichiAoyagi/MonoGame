@@ -322,7 +322,7 @@ namespace Microsoft.Xna.Framework
                 #if TVOS
                 return DisplayOrientation.LandscapeLeft;
                 #else
-                return OrientationConverter.ToDisplayOrientation(_viewController.InterfaceOrientation);
+                return OrientationConverter.ToDisplayOrientation(_viewController.CurrentDeviceOrientation);
                 #endif
             }
         }
